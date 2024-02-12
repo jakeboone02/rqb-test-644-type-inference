@@ -2,13 +2,15 @@ import {
   Field,
   FullField,
   QueryBuilder,
+  RuleGroupType,
+  RuleType,
   ValueEditor,
   ValueEditorProps,
   ValueSelector,
   ValueSelectorProps,
-  toFullOptionList,
 } from "react-querybuilder";
 import "./App.css";
+import { useCallback, useState } from "react";
 
 type FieldNames = "firstName" | "lastName";
 
@@ -17,22 +19,50 @@ const fields: Field<FieldNames>[] = [
   { name: "lastName", label: "Last Name" },
 ];
 
-const VE = (props: ValueEditorProps<FullField>) => <ValueEditor {...props} />;
+const valueEditor = (props: ValueEditorProps<FullField<FieldNames>>) => (
+  <ValueEditor {...props} />
+);
 
-const FS = (props: ValueSelectorProps<FullField>) => (
+const fieldSelector = (props: ValueSelectorProps<FullField<FieldNames>>) => (
   <ValueSelector {...props} />
 );
 
+const defaultQuery: RuleGroupType<RuleType<FieldNames>> = {
+  combinator: "and",
+  rules: [{ field: "firstName", operator: "beginsWith", value: "Steve" }],
+};
+
 function App() {
-  // const [query, setQuery] = useState<RuleGroupType | undefined>();
+  const [, setQuery] = useState<
+    RuleGroupType<RuleType<FieldNames>> | undefined
+  >();
+  const updateQuery = useCallback(
+    (q: RuleGroupType<RuleType<FieldNames>>) => setQuery(q),
+    []
+  );
 
   return (
     <div>
       <QueryBuilder
-        fields={toFullOptionList(fields)}
+        fields={fields}
+        defaultQuery={defaultQuery}
+        onQueryChange={updateQuery}
         controlElements={{
-          fieldSelector: FS,
-          valueEditor: VE,
+          fieldSelector,
+          valueEditor,
+        }}
+      />
+      <QueryBuilder
+        fields={fields}
+        defaultQuery={defaultQuery}
+        onQueryChange={updateQuery}
+        controlElements={{
+          fieldSelector: (props: ValueSelectorProps<FullField<FieldNames>>) => (
+            <ValueSelector {...props} />
+          ),
+          valueEditor: (props: ValueEditorProps<FullField<FieldNames>>) => (
+            <ValueEditor {...props} />
+          ),
         }}
       />
     </div>
